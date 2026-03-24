@@ -1,0 +1,9 @@
+.env
+fastjira
+collab
+jira0
+googleapis
+.cache
+.venv
+.adk/
+__pycache__/
