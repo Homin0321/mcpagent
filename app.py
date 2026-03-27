@@ -12,8 +12,8 @@ load_dotenv()
 
 agent_options = ["fastjira", "gemini", "search", "url", "jira0", "collab", "googleapis"]
 model_options = [
-    "gemini-flash-lite-latest",
-    "gemini-flash-latest",
+    "gemini-3.1-flash-lite-preview",
+    "gemini-3-flash-preview",
     "gemini-3.1-pro-preview",
     "gemini-2.5-flash-lite",
     "gemini-2.5-flash",
