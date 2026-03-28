@@ -4,13 +4,22 @@ import uuid
 
 import requests
 import streamlit as st
-from api_client import APIClient
 from dotenv import load_dotenv, set_key
+
+from api_client import APIClient
 from utils import fix_markdown_symbol_issue
 
 load_dotenv()
 
-agent_options = ["fastjira", "gemini", "search", "url", "jira0", "collab", "googleapis"]
+agent_options = [
+    "fastjira",
+    "gemini",
+    "search",
+    "webfetch",
+    "jira0",
+    "collab",
+    "googleapis",
+]
 model_options = [
     "gemini-3.1-flash-lite-preview",
     "gemini-3-flash-preview",
