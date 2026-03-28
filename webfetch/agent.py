@@ -1,8 +1,14 @@
 import os
+import re
 
 import trafilatura
 from dotenv import load_dotenv
 from google.adk.agents import Agent
+from youtube_transcript_api import (
+    NoTranscriptFound,
+    TranscriptsDisabled,
+    YouTubeTranscriptApi,
+)
 
 load_dotenv()
 LLM_MODEL = os.getenv("MODEL", "gemini-3.1-flash-lite-preview")
@@ -23,6 +29,36 @@ You are a highly capable Web Scraping and Research Agent. You must use the `scra
 """
 
 
+def get_video_id(url):
+    """
+    Extracts the video ID from a YouTube URL.
+    """
+    pattern = r"(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})"
+    match = re.search(pattern, url)
+    return match.group(1) if match else None
+
+
+def get_youtube_transcript(video_id):
+    """Fetches the transcript of a YouTube video."""
+    try:
+        transcript_list = YouTubeTranscriptApi().list(video_id)
+
+        try:
+            # Try to fetch English transcript first
+            transcript = transcript_list.find_transcript(["en"])
+        except NoTranscriptFound:
+            # Fallback: take the first available transcript
+            transcript = next(iter(transcript_list))
+
+        return " ".join([item.text for item in transcript.fetch()])
+
+    except (TranscriptsDisabled, NoTranscriptFound):
+        return None
+    except Exception as e:
+        print(f"Error fetching transcript: {e}")
+        return None
+
+
 def scrap_url(url: str) -> str:
     """
     Scrapes a URL and returns the extracted text content.
@@ -33,6 +69,14 @@ def scrap_url(url: str) -> str:
     Returns:
         The extracted text content from the URL, or an error message if extraction fails.
     """
+    video_id = get_video_id(url)
+    if video_id:
+        transcript = get_youtube_transcript(video_id)
+        if transcript:
+            return transcript
+        else:
+            return f"Error: Could not extract transcript from the YouTube video: {url}"
+
     downloaded = trafilatura.fetch_url(url)
     if downloaded is None:
         return f"Error: Could not fetch the URL: {url}"
